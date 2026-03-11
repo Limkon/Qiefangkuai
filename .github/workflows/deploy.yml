@@ -1,0 +1,27 @@
+name: Deploy to Cloudflare Pages
+
+# 触发条件：当代码推送到 main 分支时自动执行
+on:
+  push:
+    branches:
+      - main  # 如果你的主分支叫 master，请将其改为 master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+
+    steps:
+      - name: 检出代码 (Checkout)
+        uses: actions/checkout@v3
+
+      - name: 部署到 Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: 'qiefangkuai'    # 替换为你在 Cloudflare 上创建的 Pages 项目名称
+          directory: '.'                # 你的静态文件所在的目录。由于 index.html 在根目录，填 '.' 即可
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
