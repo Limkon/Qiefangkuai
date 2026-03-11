@@ -1,27 +1,40 @@
-name: Deploy to Cloudflare Pages
+name: Build Worker
 
-# 触发条件：当代码推送到 main 分支时自动执行
 on:
-  push:
-    branches:
-      - main  # 如果你的主分支叫 master，请将其改为 master
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      deployments: write
 
     steps:
-      - name: 检出代码 (Checkout)
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: 部署到 Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: 'qiefangkuai'    # 替换为你在 Cloudflare 上创建的 Pages 项目名称
-          directory: '.'                # 你的静态文件所在的目录。由于 index.html 在根目录，填 '.' 即可
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build worker
+        run: npm run build
+
+      - name: Move output to result
+        # 创建 result 目录并将 dist 中的文件移动过去
+        run: |
+          mkdir -p result
+          mv dist/_worker.js result/_worker.js
+
+      - name: Commit and push result
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add result/_worker.js
+          git commit -m "build: update worker script in result/ [skip ci]" || echo "No changes to commit"
+          git push
