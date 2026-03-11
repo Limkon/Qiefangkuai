@@ -1,0 +1,11 @@
+{
+  "name": "qiefangkuai-worker",
+  "version": "1.0.0",
+  "description": "切方块游戏 Cloudflare Worker 构建脚本",
+  "main": "index.html",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "author": "海拥",
+  "license": "ISC"
+}
