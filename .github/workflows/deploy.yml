@@ -25,16 +25,18 @@ jobs:
       - name: Build worker
         run: npm run build
 
-      - name: Move output to result
-        # 创建 result 目录并将 dist 中的文件移动过去
+      - name: Move output and Zip result
+        # 创建 result 目录，移动文件，并进入目录将其打包
         run: |
           mkdir -p result
           mv dist/_worker.js result/_worker.js
+          cd result
+          zip _worker.zip _worker.js
 
       - name: Commit and push result
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add result/_worker.js
-          git commit -m "build: update worker script in result/ [skip ci]" || echo "No changes to commit"
+          git add result/_worker.js result/_worker.zip
+          git commit -m "build: update worker script and zip in result/ [skip ci]" || echo "No changes to commit"
           git push
