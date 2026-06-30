@@ -6,6 +6,6 @@
   "scripts": {
     "build": "node build.js"
   },
-  "author": "海拥",
+  "author": "X",
   "license": "ISC"
 }
