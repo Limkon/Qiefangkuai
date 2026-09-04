@@ -272,6 +272,28 @@ button:active::before {
 	text-align: center;
 }
 
+/* 语言切换按钮样式 */
+.lang-switch-btn {
+	position: fixed;
+	top: 14px;
+	left: 14px;
+	width: auto;
+	padding: 6px 14px;
+	font-size: 0.95rem;
+	margin: 0;
+	border: 1px solid rgba(255, 255, 255, 0.25);
+	border-radius: 4px;
+	background: rgba(0, 0, 0, 0.25);
+	cursor: pointer;
+	z-index: 100;
+	letter-spacing: 0.05em;
+}
+
+.lang-switch-btn:hover {
+	background: rgba(255, 255, 255, 0.1);
+	border-color: rgba(255, 255, 255, 0.45);
+}
+
 @media (min-width: 1025px) {
 	button:hover {
 		opacity: 1;
@@ -290,7 +312,7 @@ button:active::before {
       });
     } else if (path.endsWith('/js/script.js')) {
       return new Response(`// ============================================================================
-// 1. i18n 多语言系统（严格纯中文 / 纯英文隔离）
+// 1. i18n 多语言系统（严格纯中文 / 纯英文隔离，支持记忆切换）
 // ============================================================================
 
 const I18N = {
@@ -310,10 +332,11 @@ const I18N = {
 		highScorePrefix: 'HIGH SCORE: ',
 		scorePrefix: 'SCORE: ',
 		cubeCountPrefix: 'BLOCKS SMASHED: ',
-		slowmoText: 'SLOW-MO'
+		slowmoText: 'SLOW-MO',
+		langBtn: '中文'
 	},
 	zh: {
-		title: '切方块 - Menja',
+		title: '切方块',
 		mainTitle: '切方块',
 		playNormal: '经典模式',
 		playCasual: '休闲模式',
@@ -328,22 +351,42 @@ const I18N = {
 		highScorePrefix: '最高分：',
 		scorePrefix: '当前分数：',
 		cubeCountPrefix: '粉碎方块：',
-		slowmoText: '慢动作'
+		slowmoText: '慢动作',
+		langBtn: 'English'
 	}
 };
 
+const LANG_STORAGE_KEY = '__menja_game_lang';
+
 function detectLanguage() {
 	try {
-		const lang = (navigator.languages && navigator.languages[0]) || navigator.language || navigator.userLanguage || '';
-		if (typeof lang === 'string' && lang.toLowerCase().startsWith('zh')) {
-			return 'zh';
+		// 1. URL 参数优先 ?lang=zh / ?lang=en
+		const params = new URLSearchParams(window.location.search);
+		const urlLang = params.get('lang');
+		if (urlLang && (urlLang === 'zh' || urlLang === 'en')) {
+			localStorage.setItem(LANG_STORAGE_KEY, urlLang);
+			return urlLang;
+		}
+
+		// 2. 本地缓存次之
+		const cached = localStorage.getItem(LANG_STORAGE_KEY);
+		if (cached === 'zh' || cached === 'en') {
+			return cached;
+		}
+
+		// 3. 浏览器语言匹配（遍历所有首选语言）
+		const navLangs = navigator.languages || [navigator.language || navigator.userLanguage || ''];
+		for (const l of navLangs) {
+			if (typeof l === 'string' && l.toLowerCase().startsWith('zh')) {
+				return 'zh';
+			}
 		}
 	} catch (e) {}
-	return 'en';
+	return 'zh'; // 默认采用纯中文
 }
 
-const currentLang = detectLanguage();
-const t = key => (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || '';
+let currentLang = detectLanguage();
+const t = key => (I18N[currentLang] && I18N[currentLang][key]) || I18N.zh[key] || '';
 
 // 统一应用静态 DOM 多语言
 function applyLanguageToDOM() {
@@ -362,6 +405,21 @@ function applyLanguageToDOM() {
 	if (slowmoEl) {
 		slowmoEl.setAttribute('data-text', t('slowmoText'));
 	}
+
+	const langBtn = document.querySelector('.lang-switch-btn');
+	if (langBtn) {
+		langBtn.textContent = t('langBtn');
+	}
+}
+
+function toggleLanguage() {
+	currentLang = currentLang === 'zh' ? 'en' : 'zh';
+	try {
+		localStorage.setItem(LANG_STORAGE_KEY, currentLang);
+	} catch (e) {}
+	applyLanguageToDOM();
+	renderScoreHud();
+	renderMenus();
 }
 
 
@@ -1243,7 +1301,7 @@ function renderMenus() {
 	}
 }
 
-// 统一绑定菜单按钮（仅执行一次，避免重复监听）
+// 统一绑定菜单按钮
 handleClick(\$('.play-normal-btn'), () => {
 	setGameMode(GAME_MODE_RANKED);
 	setActiveMenu(null);
@@ -1265,6 +1323,11 @@ handleClick(\$('.play-again-btn'), () => {
 });
 
 handleClick(\$('.menu-btn--score'), () => setActiveMenu(MENU_MAIN));
+
+// 语言切换事件
+handleClick(\$('.lang-switch-btn'), () => {
+	toggleLanguage();
+});
 
 
 // ============================================================================
@@ -1847,12 +1910,12 @@ setupCanvases();
       });
     } else {
       return new Response(`<!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 	<head>
 		<meta charset="utf-8">
-		<title data-i18n="title">Menja</title>
+		<title data-i18n="title">切方块</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-		<meta name="keywords" content="Menja, 切方块, 3D Game, HTML5" />
+		<meta name="keywords" content="切方块, Menja, 3D Game, HTML5" />
 		<meta name="description" content="3D Cube Slicing Game." /> 
 		<link rel="stylesheet" href="css/style.css"/>
 	</head>
@@ -1867,7 +1930,7 @@ setupCanvases();
 				<div class="cube-count-lbl"></div>
 			</div>
 			<div class="pause-btn" aria-label="Pause"><div></div></div>
-			<div class="slowmo" data-text="SLOW-MO">
+			<div class="slowmo" data-text="慢动作">
 				<div class="slowmo__bar"></div>
 			</div>
 		</div>
@@ -1876,27 +1939,29 @@ setupCanvases();
 		<div class="menus">
 			<!-- 主菜单 -->
 			<div class="menu menu--main">
-				<h1 data-i18n="mainTitle">MENJA</h1>
-				<button type="button" class="play-normal-btn" data-i18n="playNormal">Play Normal</button>
-				<button type="button" class="play-casual-btn" data-i18n="playCasual">Play Casual</button>
-				<div class="credits" data-i18n="credits">An 8KB 3D Game</div>
+				<!-- 语言切换按钮 -->
+				<button type="button" class="lang-switch-btn" aria-label="Language Switch">EN / 中文</button>
+				<h1 data-i18n="mainTitle">切方块</h1>
+				<button type="button" class="play-normal-btn" data-i18n="playNormal">经典模式</button>
+				<button type="button" class="play-casual-btn" data-i18n="playCasual">休闲模式</button>
+				<div class="credits" data-i18n="credits">8 KB 三维切方块游戏</div>
 			</div>
 
 			<!-- 暂停菜单 -->
 			<div class="menu menu--pause">
-				<h1 data-i18n="pauseTitle">PAUSED</h1>
-				<button type="button" class="resume-btn" data-i18n="resume">Resume</button>
-				<button type="button" class="menu-btn--pause" data-i18n="mainMenu">Main Menu</button>
+				<h1 data-i18n="pauseTitle">游戏暂停</h1>
+				<button type="button" class="resume-btn" data-i18n="resume">继续游戏</button>
+				<button type="button" class="menu-btn--pause" data-i18n="mainMenu">返回主菜单</button>
 			</div>
 
 			<!-- 结算菜单 -->
 			<div class="menu menu--score">
-				<h1 data-i18n="gameOverTitle">GAME OVER</h1>
-				<h2 data-i18n="yourScore">YOUR SCORE:</h2>
+				<h1 data-i18n="gameOverTitle">游戏结束</h1>
+				<h2 data-i18n="yourScore">本次得分：</h2>
 				<div class="final-score-lbl">0</div>
 				<div class="high-score-lbl"></div>
-				<button type="button" class="play-again-btn" data-i18n="playAgain">Play Again</button>
-				<button type="button" class="menu-btn--score" data-i18n="mainMenu">Main Menu</button>
+				<button type="button" class="play-again-btn" data-i18n="playAgain">再玩一次</button>
+				<button type="button" class="menu-btn--score" data-i18n="mainMenu">返回主菜单</button>
 			</div>
 		</div>
 
