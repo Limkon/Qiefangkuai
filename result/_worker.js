@@ -16,7 +16,7 @@ body {
 	height: 100vh;
 	overflow: hidden;
 
-	/* 优雅适配西文等宽与中文字体 */
+	/* 适配中西文字体排版 */
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", monospace;
 	font-weight: bold;
 	letter-spacing: 0.06em;
@@ -91,7 +91,6 @@ body {
 	will-change: opacity;
 }
 
-/* 优先通过 data-text 属性读取当前语言文本，解决中文时夹带英文 SLOW-MO 的问题 */
 .slowmo::before {
 	content: attr(data-text);
 	display: block;
@@ -272,28 +271,6 @@ button:active::before {
 	text-align: center;
 }
 
-/* 语言切换按钮样式 */
-.lang-switch-btn {
-	position: fixed;
-	top: 14px;
-	left: 14px;
-	width: auto;
-	padding: 6px 14px;
-	font-size: 0.95rem;
-	margin: 0;
-	border: 1px solid rgba(255, 255, 255, 0.25);
-	border-radius: 4px;
-	background: rgba(0, 0, 0, 0.25);
-	cursor: pointer;
-	z-index: 100;
-	letter-spacing: 0.05em;
-}
-
-.lang-switch-btn:hover {
-	background: rgba(255, 255, 255, 0.1);
-	border-color: rgba(255, 255, 255, 0.45);
-}
-
 @media (min-width: 1025px) {
 	button:hover {
 		opacity: 1;
@@ -312,7 +289,7 @@ button:active::before {
       });
     } else if (path.endsWith('/js/script.js')) {
       return new Response(`// ============================================================================
-// 1. i18n 多语言系统（严格纯中文 / 纯英文隔离，支持记忆切换）
+// 1. i18n 多语言系统（严格纯中文 / 纯英文隔离）
 // ============================================================================
 
 const I18N = {
@@ -332,8 +309,7 @@ const I18N = {
 		highScorePrefix: 'HIGH SCORE: ',
 		scorePrefix: 'SCORE: ',
 		cubeCountPrefix: 'BLOCKS SMASHED: ',
-		slowmoText: 'SLOW-MO',
-		langBtn: '中文'
+		slowmoText: 'SLOW-MO'
 	},
 	zh: {
 		title: '切方块',
@@ -351,30 +327,13 @@ const I18N = {
 		highScorePrefix: '最高分：',
 		scorePrefix: '当前分数：',
 		cubeCountPrefix: '粉碎方块：',
-		slowmoText: '慢动作',
-		langBtn: 'English'
+		slowmoText: '慢动作'
 	}
 };
 
-const LANG_STORAGE_KEY = '__menja_game_lang';
-
 function detectLanguage() {
 	try {
-		// 1. URL 参数优先 ?lang=zh / ?lang=en
-		const params = new URLSearchParams(window.location.search);
-		const urlLang = params.get('lang');
-		if (urlLang && (urlLang === 'zh' || urlLang === 'en')) {
-			localStorage.setItem(LANG_STORAGE_KEY, urlLang);
-			return urlLang;
-		}
-
-		// 2. 本地缓存次之
-		const cached = localStorage.getItem(LANG_STORAGE_KEY);
-		if (cached === 'zh' || cached === 'en') {
-			return cached;
-		}
-
-		// 3. 浏览器语言匹配（遍历所有首选语言）
+		// 优先检索所有首选语言
 		const navLangs = navigator.languages || [navigator.language || navigator.userLanguage || ''];
 		for (const l of navLangs) {
 			if (typeof l === 'string' && l.toLowerCase().startsWith('zh')) {
@@ -382,10 +341,10 @@ function detectLanguage() {
 			}
 		}
 	} catch (e) {}
-	return 'zh'; // 默认采用纯中文
+	return 'zh'; // 默认优先采用纯中文
 }
 
-let currentLang = detectLanguage();
+const currentLang = detectLanguage();
 const t = key => (I18N[currentLang] && I18N[currentLang][key]) || I18N.zh[key] || '';
 
 // 统一应用静态 DOM 多语言
@@ -405,21 +364,6 @@ function applyLanguageToDOM() {
 	if (slowmoEl) {
 		slowmoEl.setAttribute('data-text', t('slowmoText'));
 	}
-
-	const langBtn = document.querySelector('.lang-switch-btn');
-	if (langBtn) {
-		langBtn.textContent = t('langBtn');
-	}
-}
-
-function toggleLanguage() {
-	currentLang = currentLang === 'zh' ? 'en' : 'zh';
-	try {
-		localStorage.setItem(LANG_STORAGE_KEY, currentLang);
-	} catch (e) {}
-	applyLanguageToDOM();
-	renderScoreHud();
-	renderMenus();
 }
 
 
@@ -1324,11 +1268,6 @@ handleClick(\$('.play-again-btn'), () => {
 
 handleClick(\$('.menu-btn--score'), () => setActiveMenu(MENU_MAIN));
 
-// 语言切换事件
-handleClick(\$('.lang-switch-btn'), () => {
-	toggleLanguage();
-});
-
 
 // ============================================================================
 // 8. 游戏流程动作 (actions.js)
@@ -1939,8 +1878,6 @@ setupCanvases();
 		<div class="menus">
 			<!-- 主菜单 -->
 			<div class="menu menu--main">
-				<!-- 语言切换按钮 -->
-				<button type="button" class="lang-switch-btn" aria-label="Language Switch">EN / 中文</button>
 				<h1 data-i18n="mainTitle">切方块</h1>
 				<button type="button" class="play-normal-btn" data-i18n="playNormal">经典模式</button>
 				<button type="button" class="play-casual-btn" data-i18n="playCasual">休闲模式</button>
