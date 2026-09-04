@@ -9,7 +9,7 @@ body {
 	height: 100vh;
 	overflow: hidden;
 
-	/* 优雅适配西文等宽与中文字体 */
+	/* 适配中西文字体排版 */
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", monospace;
 	font-weight: bold;
 	letter-spacing: 0.06em;
@@ -84,7 +84,6 @@ body {
 	will-change: opacity;
 }
 
-/* 优先通过 data-text 属性读取当前语言文本，解决中文时夹带英文 SLOW-MO 的问题 */
 .slowmo::before {
 	content: attr(data-text);
 	display: block;
@@ -263,28 +262,6 @@ button:active::before {
 	font-size: 0.95rem;
 	opacity: 0.55;
 	text-align: center;
-}
-
-/* 语言切换按钮样式 */
-.lang-switch-btn {
-	position: fixed;
-	top: 14px;
-	left: 14px;
-	width: auto;
-	padding: 6px 14px;
-	font-size: 0.95rem;
-	margin: 0;
-	border: 1px solid rgba(255, 255, 255, 0.25);
-	border-radius: 4px;
-	background: rgba(0, 0, 0, 0.25);
-	cursor: pointer;
-	z-index: 100;
-	letter-spacing: 0.05em;
-}
-
-.lang-switch-btn:hover {
-	background: rgba(255, 255, 255, 0.1);
-	border-color: rgba(255, 255, 255, 0.45);
 }
 
 @media (min-width: 1025px) {
