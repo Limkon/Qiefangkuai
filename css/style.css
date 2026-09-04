@@ -1,3 +1,7 @@
+*, *::before, *::after {
+	box-sizing: border-box;
+}
+
 body {
 	margin: 0;
 	background-color: #000;
@@ -5,7 +9,8 @@ body {
 	height: 100vh;
 	overflow: hidden;
 
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", monospace;
+	/* 优雅适配西文等宽与中文字体 */
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", monospace;
 	font-weight: bold;
 	letter-spacing: 0.06em;
 	color: rgba(255, 255, 255, 0.75);
@@ -36,7 +41,8 @@ body {
 }
 
 .cube-count-lbl {
-	font-size: 0.46em;
+	font-size: 0.5em;
+	margin-top: 0.2em;
 }
 
 .pause-btn {
@@ -44,6 +50,7 @@ body {
 	top: 0;
 	right: 0;
 	padding: 0.8em 0.65em;
+	cursor: pointer;
 }
 
 .pause-btn > div {
@@ -77,16 +84,21 @@ body {
 	will-change: opacity;
 }
 
-/* 读取 data-text 实现中英文动态切换，默认回退显示 SLOW-MO */
+/* 优先通过 data-text 属性读取当前语言文本，解决中文时夹带英文 SLOW-MO 的问题 */
 .slowmo::before {
 	content: attr(data-text);
 	display: block;
-	font-size: calc(8px + 1vw + 0.5vh);
+	font-size: calc(10px + 1vw + 0.5vh);
 	margin-left: 0.5em;
 	margin-bottom: 8px;
+	letter-spacing: 0.1em;
 }
 
-.slowmo:not([data-text])::before {
+html[lang="zh"] .slowmo:not([data-text])::before {
+	content: '慢动作';
+}
+
+html[lang="en"] .slowmo:not([data-text])::before {
 	content: 'SLOW-MO';
 }
 
@@ -106,7 +118,6 @@ body {
 	background-color: rgba(255, 255, 255, 0.75);
 	transform-origin: 0 0;
 }
-
 
 
 /*/////////////////////
@@ -137,7 +148,6 @@ body {
 	opacity: 0.02;
 }
 
-/* Menu containers */
 .menu {
 	pointer-events: none;
 	position: fixed;
@@ -176,13 +186,12 @@ body {
 	pointer-events: auto;
 }
 
-/* Common menu elements */
 h1 {
-	font-size: 4rem;
-	line-height: 0.95;
+	font-size: 3.6rem;
+	line-height: 1;
 	text-align: center;
 	font-weight: bold;
-	margin: 0 0.65em 1em;
+	margin: 0 0.65em 0.8em;
 }
 
 h2 {
@@ -190,31 +199,34 @@ h2 {
 	line-height: 1;
 	text-align: center;
 	font-weight: bold;
-	margin: -1em 0.65em 1em;
+	margin: -0.5em 0.65em 1.2em;
+	opacity: 0.85;
 }
 
 .final-score-lbl {
-	font-size: 5rem;
+	font-size: 4.8rem;
 	margin: -0.2em 0 0;
 }
 
 .high-score-lbl {
-	font-size: 1.2rem;
-	margin: 0 0 2.5em;
+	font-size: 1.15rem;
+	margin: 0 0 2.2em;
+	opacity: 0.8;
 }
 
 button {
 	display: block;
 	position: relative;
 	width: 220px;
-	padding: 12px 20px;
+	padding: 12px 18px;
+	margin: 6px auto;
 	background: transparent;
 	border: none;
 	outline: none;
 	user-select: none;
 	font-family: inherit;
 	font-weight: bold;
-	font-size: 1.3rem;
+	font-size: 1.25rem;
 	color: #fff;
 	opacity: 0.75;
 	transition: opacity 0.3s;
@@ -247,11 +259,10 @@ button:active::before {
 	position: fixed;
 	width: 100%;
 	left: 0;
-	bottom: 20px;
-}
-
-a {
-	color: white;
+	bottom: 24px;
+	font-size: 0.95rem;
+	opacity: 0.55;
+	text-align: center;
 }
 
 @media (min-width: 1025px) {
