@@ -1,40 +1,46 @@
-// globalConfig.js
 // ============================================================================
+// 1. i18n 多语言系统（严格纯中文 / 纯英文隔离）
 // ============================================================================
 
-// --- i18n 语言配置 ---
 const I18N = {
 	en: {
-		score: 'SCORE: ',
-		blocksSmashed: 'BLOCKS SMASHED: ',
-		newHighScore: 'New High Score!',
-		highScore: 'HIGH SCORE: ',
-		slowmo: 'SLOW-MO',
+		title: 'Menja',
+		mainTitle: 'MENJA',
 		playNormal: 'Play Normal',
 		playCasual: 'Play Casual',
+		credits: 'An 8KB 3D Game',
+		pauseTitle: 'PAUSED',
 		resume: 'Resume',
 		mainMenu: 'Main Menu',
+		gameOverTitle: 'GAME OVER',
+		yourScore: 'YOUR SCORE:',
 		playAgain: 'Play Again',
-		paused: 'PAUSED',
-		gameOver: 'GAME OVER'
+		newHighScore: 'New High Score!',
+		highScorePrefix: 'HIGH SCORE: ',
+		scorePrefix: 'SCORE: ',
+		cubeCountPrefix: 'BLOCKS SMASHED: ',
+		slowmoText: 'SLOW-MO'
 	},
 	zh: {
-		score: '分数: ',
-		blocksSmashed: '方块粉碎: ',
-		newHighScore: '新的最高分!',
-		highScore: '最高分: ',
-		slowmo: '慢动作',
+		title: '切方块 - Menja',
+		mainTitle: '切方块',
 		playNormal: '经典模式',
 		playCasual: '休闲模式',
+		credits: '8 KB 三维切方块游戏',
+		pauseTitle: '游戏暂停',
 		resume: '继续游戏',
-		mainMenu: '主菜单',
+		mainMenu: '返回主菜单',
+		gameOverTitle: '游戏结束',
+		yourScore: '本次得分：',
 		playAgain: '再玩一次',
-		paused: '暂停',
-		gameOver: '游戏结束'
+		newHighScore: '创下新的最高纪录！',
+		highScorePrefix: '最高分：',
+		scorePrefix: '当前分数：',
+		cubeCountPrefix: '粉碎方块：',
+		slowmoText: '慢动作'
 	}
 };
 
-// 自动检测浏览器语言：中文判定为 zh，其余/无法检测均默认 en
 function detectLanguage() {
 	try {
 		const lang = (navigator.languages && navigator.languages[0]) || navigator.language || navigator.userLanguage || '';
@@ -48,29 +54,52 @@ function detectLanguage() {
 const currentLang = detectLanguage();
 const t = key => (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || '';
 
-// Timing multiplier for entire game engine.
+// 统一应用静态 DOM 多语言
+function applyLanguageToDOM() {
+	document.documentElement.lang = currentLang;
+	document.title = t('title');
+
+	document.querySelectorAll('[data-i18n]').forEach(el => {
+		const key = el.getAttribute('data-i18n');
+		const translation = t(key);
+		if (translation) {
+			el.textContent = translation;
+		}
+	});
+
+	const slowmoEl = document.querySelector('.slowmo');
+	if (slowmoEl) {
+		slowmoEl.setAttribute('data-text', t('slowmoText'));
+	}
+}
+
+
+// ============================================================================
+// 2. 全局参数配置 (globalConfig.js)
+// ============================================================================
+
 let gameSpeed = 1;
 
-// Colors
-const BLUE =   { r: 0x67, g: 0xd7, b: 0xf0 };
-const GREEN =  { r: 0xa6, g: 0xe0, b: 0x2c };
-const PINK =   { r: 0xfa, g: 0x24, b: 0x73 };
+// 调色板
+const BLUE   = { r: 0x67, g: 0xd7, b: 0xf0 };
+const GREEN  = { r: 0xa6, g: 0xe0, b: 0x2c };
+const PINK   = { r: 0xfa, g: 0x24, b: 0x73 };
 const ORANGE = { r: 0xfe, g: 0x95, b: 0x22 };
 const allColors = [BLUE, GREEN, PINK, ORANGE];
 
-// Gameplay
+// 游戏机制数值
 const getSpawnDelay = () => {
 	const spawnDelayMax = 1400;
 	const spawnDelayMin = 550;
 	const spawnDelay = spawnDelayMax - state.game.cubeCount * 3.1;
 	return Math.max(spawnDelay, spawnDelayMin);
-}
+};
 const doubleStrongEnableScore = 2000;
 const slowmoThreshold = 10;
 const strongThreshold = 25;
 const spinnerThreshold = 25;
 
-// Interaction state
+// 交互状态
 let pointerIsDown = false;
 let pointerScreen = { x: 0, y: 0 };
 let pointerScene = { x: 0, y: 0 };
@@ -80,6 +109,8 @@ const backboardZ = -400;
 const shadowColor = '#262e36';
 const airDrag = 0.022;
 const gravity = 0.3;
+
+// 火花 & 拖尾
 const sparkColor = 'rgba(170,221,255,.9)';
 const sparkThickness = 2.2;
 const airDragSpark = 0.1;
@@ -87,27 +118,33 @@ const touchTrailColor = 'rgba(170,221,255,.62)';
 const touchTrailThickness = 7;
 const touchPointLife = 120;
 const touchPoints = [];
+
+// 目标几何体尺寸
 const targetRadius = 40;
 const targetHitRadius = 50;
-const makeTargetGlueColor = target => 'rgb(170,221,255)';
+const makeTargetGlueColor = () => 'rgb(170,221,255)';
 const fragRadius = targetRadius / 3;
 
 const canvas = document.querySelector('#c');
 
+// 3D 摄像机
 const cameraDistance = 900;
 const sceneScale = 1;
-const cameraFadeStartZ = 0.45*cameraDistance;
-const cameraFadeEndZ = 0.65*cameraDistance;
+const cameraFadeStartZ = 0.45 * cameraDistance;
+const cameraFadeEndZ = 0.65 * cameraDistance;
 const cameraFadeRange = cameraFadeEndZ - cameraFadeStartZ;
 
+// 顶点渲染池
 const allVertices = [];
 const allPolys = [];
 const allShadowVertices = [];
 const allShadowPolys = [];
 
 
-// state.js
 // ============================================================================
+// 3. 状态管理 (state.js)
+// ============================================================================
+
 const GAME_MODE_RANKED = Symbol('GAME_MODE_RANKED');
 const GAME_MODE_CASUAL = Symbol('GAME_MODE_CASUAL');
 
@@ -132,7 +169,7 @@ const isMenuVisible = () => !!state.menus.active;
 const isCasualGame = () => state.game.mode === GAME_MODE_CASUAL;
 const isPaused = () => state.menus.active === MENU_PAUSE;
 
-const highScoreKey = '__menja__highScore';
+const highScoreKey = '__menja_game_highscore';
 const getHighScore = () => {
 	const raw = localStorage.getItem(highScoreKey);
 	return raw ? parseInt(raw, 10) : 0;
@@ -147,31 +184,25 @@ const setHighScore = score => {
 const isNewHighScore = () => state.game.score > _lastHighscore;
 
 
-// utils.js
 // ============================================================================
-const invariant = (condition, message) => {
-	if (!condition) throw new Error(message);
-};
+// 4. 工具函数 (utils.js)
+// ============================================================================
 
 const $ = selector => document.querySelector(selector);
 const handleClick = (element, handler) => element && element.addEventListener('click', handler);
 const handlePointerDown = (element, handler) => {
 	if (!element) return;
-	element.addEventListener('touchstart', handler);
+	element.addEventListener('touchstart', handler, { passive: true });
 	element.addEventListener('mousedown', handler);
 };
 
 const formatNumber = num => num.toLocaleString();
 
-const PI = Math.PI;
 const TAU = Math.PI * 2;
-const ETA = Math.PI * 0.5;
-
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 const lerp = (a, b, mix) => (b - a) * mix + a;
 const random = (min, max) => Math.random() * (max - min) + min;
-const randomInt = (min, max) => ((Math.random() * (max - min + 1)) | 0) + min;
-const pickOne = arr => arr[Math.random() * arr.length | 0];
+const pickOne = arr => arr[(Math.random() * arr.length) | 0];
 
 const colorToHex = color => {
 	return '#' +
@@ -196,11 +227,9 @@ const shadeColor = (color, lightness) => {
 };
 
 const _allCooldowns = [];
-
-const makeCooldown = (rechargeTime, units=1) => {
+const makeCooldown = (rechargeTime, units = 1) => {
 	let timeRemaining = 0;
 	let lastTime = 0;
-
 	const initialOptions = { rechargeTime, units };
 
 	const updateTime = () => {
@@ -208,7 +237,7 @@ const makeCooldown = (rechargeTime, units=1) => {
 		if (now < lastTime) {
 			timeRemaining = 0;
 		} else {
-			timeRemaining -= now-lastTime;
+			timeRemaining -= now - lastTime;
 			if (timeRemaining < 0) timeRemaining = 0;
 		}
 		lastTime = now;
@@ -216,7 +245,7 @@ const makeCooldown = (rechargeTime, units=1) => {
 
 	const canUse = () => {
 		updateTime();
-		return timeRemaining <= (rechargeTime * (units-1));
+		return timeRemaining <= (rechargeTime * (units - 1));
 	};
 
 	const cooldown = {
@@ -228,7 +257,7 @@ const makeCooldown = (rechargeTime, units=1) => {
 		},
 		mutate(options) {
 			if (options.rechargeTime) {
-				timeRemaining -= rechargeTime-options.rechargeTime;
+				timeRemaining -= rechargeTime - options.rechargeTime;
 				if (timeRemaining < 0) timeRemaining = 0;
 				rechargeTime = options.rechargeTime;
 			}
@@ -245,7 +274,7 @@ const makeCooldown = (rechargeTime, units=1) => {
 	return cooldown;
 };
 
-const resetAllCooldowns = () => _allCooldowns.forEach(cooldown => cooldown.reset());
+const resetAllCooldowns = () => _allCooldowns.forEach(c => c.reset());
 
 const makeSpawner = ({ chance, cooldownPerSpawn, maxSpawns }) => {
 	const cooldown = makeCooldown(cooldownPerSpawn, maxSpawns);
@@ -265,11 +294,7 @@ const makeSpawner = ({ chance, cooldownPerSpawn, maxSpawns }) => {
 
 const normalize = v => {
 	const mag = Math.hypot(v.x, v.y, v.z);
-	return {
-		x: v.x / mag,
-		y: v.y / mag,
-		z: v.z / mag
-	};
+	return { x: v.x / mag, y: v.y / mag, z: v.z / mag };
 };
 
 const add = a => b => a + b;
@@ -285,7 +310,7 @@ function cloneVertices(vertices) {
 
 function copyVerticesTo(arr1, arr2) {
 	const len = arr1.length;
-	for (let i=0; i<len; i++) {
+	for (let i = 0; i < len; i++) {
 		const v1 = arr1[i];
 		const v2 = arr2[i];
 		v2.x = v1.x;
@@ -294,25 +319,16 @@ function copyVerticesTo(arr1, arr2) {
 	}
 }
 
-function computeTriMiddle(poly) {
-	const v = poly.vertices;
-	poly.middle.x = (v[0].x + v[1].x + v[2].x) / 3;
-	poly.middle.y = (v[0].y + v[1].y + v[2].y) / 3;
-	poly.middle.z = (v[0].z + v[1].z + v[2].z) / 3;
-}
-
-function computeQuadMiddle(poly) {
-	const v = poly.vertices;
-	poly.middle.x = (v[0].x + v[1].x + v[2].x + v[3].x) / 4;
-	poly.middle.y = (v[0].y + v[1].y + v[2].y + v[3].y) / 4;
-	poly.middle.z = (v[0].z + v[1].z + v[2].z + v[3].z) / 4;
-}
-
 function computePolyMiddle(poly) {
-	if (poly.vertices.length === 3) {
-		computeTriMiddle(poly);
+	const v = poly.vertices;
+	if (v.length === 3) {
+		poly.middle.x = (v[0].x + v[1].x + v[2].x) / 3;
+		poly.middle.y = (v[0].y + v[1].y + v[2].y) / 3;
+		poly.middle.z = (v[0].z + v[1].z + v[2].z) / 3;
 	} else {
-		computeQuadMiddle(poly);
+		poly.middle.x = (v[0].x + v[1].x + v[2].x + v[3].x) / 4;
+		poly.middle.y = (v[0].y + v[1].y + v[2].y + v[3].y) / 4;
+		poly.middle.z = (v[0].z + v[1].z + v[2].z + v[3].z) / 4;
 	}
 }
 
@@ -334,9 +350,9 @@ function computePolyNormal(poly, normalName) {
 	const bx = v1.x - v3.x;
 	const by = v1.y - v3.y;
 	const bz = v1.z - v3.z;
-	const nx = ay*bz - az*by;
-	const ny = az*bx - ax*bz;
-	const nz = ax*by - ay*bx;
+	const nx = ay * bz - az * by;
+	const ny = az * bx - ax * bz;
+	const nz = ax * by - ay * bx;
 	const mag = Math.hypot(nx, ny, nz);
 	const polyNormal = poly[normalName];
 	polyNormal.x = nx / mag;
@@ -355,13 +371,13 @@ function transformVertices(vertices, target, tX, tY, tZ, rX, rY, rZ, sX, sY, sZ)
 	vertices.forEach((v, i) => {
 		const targetVertex = target[i];
 		const x1 = v.x;
-		const y1 = v.z*sinX + v.y*cosX;
-		const z1 = v.z*cosX - v.y*sinX;
-		const x2 = x1*cosY - z1*sinY;
+		const y1 = v.z * sinX + v.y * cosX;
+		const z1 = v.z * cosX - v.y * sinX;
+		const x2 = x1 * cosY - z1 * sinY;
 		const y2 = y1;
-		const z2 = x1*sinY + z1*cosY;
-		const x3 = x2*cosZ - y2*sinZ;
-		const y3 = x2*sinZ + y2*cosZ;
+		const z2 = x1 * sinY + z1 * cosY;
+		const x3 = x2 * cosZ - y2 * sinZ;
+		const y3 = x2 * sinZ + y2 * cosZ;
 		const z3 = z2;
 
 		targetVertex.x = x3 * sX + tX;
@@ -385,16 +401,11 @@ const projectVertexTo = (v, target) => {
 };
 
 
-// PERF.js
 // ============================================================================
-const PERF_START = () => {};
-const PERF_END = () => {};
-const PERF_UPDATE = () => {};
-
-
-// 3dModels.js
+// 5. 3D 几何与实体模型 (3dModels.js & Entity.js)
 // ============================================================================
-function makeCubeModel({ scale=1 }) {
+
+function makeCubeModel({ scale = 1 }) {
 	return {
 		vertices: [
 			{ x: -scale, y: -scale, z: scale },
@@ -415,42 +426,6 @@ function makeCubeModel({ scale=1 }) {
 			{ vIndexes: [0, 3, 7, 4] }
 		]
 	};
-}
-
-function makeRecursiveCubeModel({ recursionLevel, splitFn, color, scale=1 }) {
-	const getScaleAtLevel = level => 1 / (3 ** level);
-	let cubeOrigins = [{ x: 0, y: 0, z: 0 }];
-
-	for (let i=1; i<=recursionLevel; i++) {
-		const scale = getScaleAtLevel(i) * 2;
-		const cubeOrigins2 = [];
-		cubeOrigins.forEach(origin => {
-			cubeOrigins2.push(...splitFn(origin, scale));
-		});
-		cubeOrigins = cubeOrigins2;
-	}
-
-	const finalModel = { vertices: [], polys: [] };
-	const cubeModel = makeCubeModel({ scale: 1 });
-	cubeModel.vertices.forEach(scaleVector(getScaleAtLevel(recursionLevel)));
-	const maxComponent = getScaleAtLevel(recursionLevel) * (3 ** recursionLevel - 1);
-
-	cubeOrigins.forEach((origin, cubeIndex) => {
-		finalModel.vertices.push(
-			...cubeModel.vertices.map(v => ({
-				x: (v.x + origin.x) * scale,
-				y: (v.y + origin.y) * scale,
-				z: (v.z + origin.z) * scale
-			}))
-		);
-		finalModel.polys.push(
-			...cubeModel.polys.map(poly => ({
-				vIndexes: poly.vIndexes.map(add(cubeIndex * 8))
-			}))
-		);
-	});
-
-	return finalModel;
 }
 
 function mengerSpongeSplit(o, s) {
@@ -478,7 +453,42 @@ function mengerSpongeSplit(o, s) {
 	];
 }
 
-function optimizeModel(model, threshold=0.0001) {
+function makeRecursiveCubeModel({ recursionLevel, splitFn, scale = 1 }) {
+	const getScaleAtLevel = level => 1 / (3 ** level);
+	let cubeOrigins = [{ x: 0, y: 0, z: 0 }];
+
+	for (let i = 1; i <= recursionLevel; i++) {
+		const s = getScaleAtLevel(i) * 2;
+		const nextOrigins = [];
+		cubeOrigins.forEach(origin => {
+			nextOrigins.push(...splitFn(origin, s));
+		});
+		cubeOrigins = nextOrigins;
+	}
+
+	const finalModel = { vertices: [], polys: [] };
+	const cubeModel = makeCubeModel({ scale: 1 });
+	cubeModel.vertices.forEach(scaleVector(getScaleAtLevel(recursionLevel)));
+
+	cubeOrigins.forEach((origin, cubeIndex) => {
+		finalModel.vertices.push(
+			...cubeModel.vertices.map(v => ({
+				x: (v.x + origin.x) * scale,
+				y: (v.y + origin.y) * scale,
+				z: (v.z + origin.z) * scale
+			}))
+		);
+		finalModel.polys.push(
+			...cubeModel.polys.map(poly => ({
+				vIndexes: poly.vIndexes.map(add(cubeIndex * 8))
+			}))
+		);
+	});
+
+	return finalModel;
+}
+
+function optimizeModel(model, threshold = 0.0001) {
 	const { vertices, polys } = model;
 	const compareVertices = (v1, v2) => (
 		Math.abs(v1.x - v2.x) < threshold &&
@@ -499,8 +509,8 @@ function optimizeModel(model, threshold=0.0001) {
 
 	vertices.forEach((v, i) => { v.originalIndexes = [i]; });
 
-	for (let i=vertices.length-1; i>=0; i--) {
-		for (let ii=i-1; ii>=0; ii--) {
+	for (let i = vertices.length - 1; i >= 0; i--) {
+		for (let ii = i - 1; ii >= 0; ii--) {
 			const v1 = vertices[i];
 			const v2 = vertices[ii];
 			if (compareVertices(v1, v2)) {
@@ -514,8 +524,7 @@ function optimizeModel(model, threshold=0.0001) {
 	vertices.forEach((v, i) => {
 		polys.forEach(p => {
 			p.vIndexes.forEach((vi, ii, arr) => {
-				const vo = v.originalIndexes;
-				if (vo.includes(vi)) arr[ii] = i;
+				if (v.originalIndexes.includes(vi)) arr[ii] = i;
 			});
 		});
 	});
@@ -526,8 +535,8 @@ function optimizeModel(model, threshold=0.0001) {
 	});
 	polys.sort((a, b) => b.sum - a.sum);
 
-	for (let i=polys.length-1; i>=0; i--) {
-		for (let ii=i-1; ii>=0; ii--) {
+	for (let i = polys.length - 1; i >= 0; i--) {
+		for (let ii = i - 1; ii >= 0; ii--) {
 			const p1 = polys[i];
 			const p2 = polys[ii];
 			if (p1.sum !== p2.sum) break;
@@ -543,11 +552,8 @@ function optimizeModel(model, threshold=0.0001) {
 	return model;
 }
 
-
-// Entity.js
-// ============================================================================
 class Entity {
-	constructor({ model, color, wireframe=false }) {
+	constructor({ model, color, wireframe = false }) {
 		const vertices = cloneVertices(model.vertices);
 		const shadowVertices = cloneVertices(model.vertices);
 		const colorHex = colorToHex(color);
@@ -608,11 +614,13 @@ class Entity {
 }
 
 
-// getTarget.js
 // ============================================================================
+// 6. 生成目标与碎片系统 (getTarget.js & createBurst.js)
+// ============================================================================
+
 const targets = [];
-const targetPool = new Map(allColors.map(c=>([c, []])));
-const targetWireframePool = new Map(allColors.map(c=>([c, []])));
+const targetPool = new Map(allColors.map(c => [c, []]));
+const targetWireframePool = new Map(allColors.map(c => [c, []]));
 
 const getTarget = (() => {
 	const slowmoSpawner = makeSpawner({ chance: 0.5, cooldownPerSpawn: 10000, maxSpawns: 1 });
@@ -620,11 +628,7 @@ const getTarget = (() => {
 	const strongSpawner = makeSpawner({ chance: 0.3, cooldownPerSpawn: 12000, maxSpawns: 1 });
 	const spinnerSpawner = makeSpawner({ chance: 0.1, cooldownPerSpawn: 10000, maxSpawns: 1 });
 
-	const axisOptions = [
-		['x', 'y'],
-		['y', 'z'],
-		['z', 'x']
-	];
+	const axisOptions = [['x', 'y'], ['y', 'z'], ['z', 'x']];
 
 	function getTargetOfStyle(color, wireframe) {
 		const pool = wireframe ? targetWireframePool : targetPool;
@@ -697,14 +701,14 @@ const getTarget = (() => {
 		});
 
 		return target;
-	}
+	};
 })();
 
 const updateTargetHealth = (target, healthDelta) => {
 	target.health += healthDelta;
 	if (!target.wireframe) {
 		const strokeWidth = target.health - 1;
-		const strokeColor = makeTargetGlueColor(target);
+		const strokeColor = makeTargetGlueColor();
 		for (let p of target.polys) {
 			p.strokeWidth = strokeWidth;
 			p.strokeColor = strokeColor;
@@ -719,20 +723,17 @@ const returnTarget = target => {
 };
 
 function resetAllTargets() {
-	while(targets.length) {
+	while (targets.length) {
 		returnTarget(targets.pop());
 	}
 }
 
-
-// createBurst.js
-// ============================================================================
 const frags = [];
-const fragPool = new Map(allColors.map(c=>([c, []])));
-const fragWireframePool = new Map(allColors.map(c=>([c, []])));
+const fragPool = new Map(allColors.map(c => [c, []]));
+const fragWireframePool = new Map(allColors.map(c => [c, []]));
 
 const createBurst = (() => {
-	const basePositions = mengerSpongeSplit({ x:0, y:0, z:0 }, fragRadius*2);
+	const basePositions = mengerSpongeSplit({ x: 0, y: 0, z: 0 }, fragRadius * 2);
 	const positions = cloneVertices(basePositions);
 	const prevPositions = cloneVertices(basePositions);
 	const velocities = cloneVertices(basePositions);
@@ -755,7 +756,7 @@ const createBurst = (() => {
 		return frag;
 	}
 
-	return (target, force=1) => {
+	return (target, force = 1) => {
 		transformVertices(
 			basePositions, positions,
 			target.x, target.y, target.z,
@@ -769,7 +770,7 @@ const createBurst = (() => {
 			1, 1, 1
 		);
 
-		for (let i=0; i<fragCount; i++) {
+		for (let i = 0; i < fragCount; i++) {
 			velocities[i].x = positions[i].x - prevPositions[i].x;
 			velocities[i].y = positions[i].y - prevPositions[i].y;
 			velocities[i].z = positions[i].z - prevPositions[i].z;
@@ -782,7 +783,7 @@ const createBurst = (() => {
 			1, 1, 1
 		);
 
-		for (let i=0; i<fragCount; i++) {
+		for (let i = 0; i < fragCount; i++) {
 			const position = positions[i];
 			const velocity = velocities[i];
 			const normal = positionNormals[i];
@@ -807,7 +808,7 @@ const createBurst = (() => {
 
 			frags.push(frag);
 		}
-	}
+	};
 })();
 
 const returnFrag = frag => {
@@ -816,9 +817,7 @@ const returnFrag = frag => {
 	pool.get(frag.color).push(frag);
 };
 
-
-// sparks.js
-// ============================================================================
+// 粒子特效
 const sparks = [];
 const sparkPool = [];
 
@@ -836,7 +835,7 @@ function addSpark(x, y, xD, yD) {
 
 function sparkBurst(x, y, count, maxSpeed) {
 	const angleInc = TAU / count;
-	for (let i=0; i<count; i++) {
+	for (let i = 0; i < count; i++) {
 		const angle = i * angleInc + angleInc * Math.random();
 		const speed = (1 - Math.random() ** 3) * maxSpeed;
 		addSpark(x, y, Math.sin(angle) * speed, Math.cos(angle) * speed);
@@ -864,9 +863,15 @@ function returnSpark(spark) {
 }
 
 
-// hud.js
 // ============================================================================
+// 7. HUD 与 UI 控制 (hud.js & menus.js)
+// ============================================================================
+
 const hudContainerNode = $('.hud');
+const scoreNode = $('.score-lbl');
+const cubeCountNode = $('.cube-count-lbl');
+const slowmoNode = $('.slowmo');
+const slowmoBarNode = $('.slowmo__bar');
 
 function setHudVisibility(visible) {
 	if (hudContainerNode) {
@@ -874,31 +879,21 @@ function setHudVisibility(visible) {
 	}
 }
 
-const scoreNode = $('.score-lbl');
-const cubeCountNode = $('.cube-count-lbl');
-
 function renderScoreHud() {
 	if (isCasualGame()) {
 		if (scoreNode) scoreNode.style.display = 'none';
 		if (cubeCountNode) cubeCountNode.style.opacity = 1;
 	} else {
 		if (scoreNode) {
-			scoreNode.innerText = `${t('score')}${state.game.score}`;
+			scoreNode.innerText = `${t('scorePrefix')}${state.game.score}`;
 			scoreNode.style.display = 'block';
 		}
 		if (cubeCountNode) cubeCountNode.style.opacity = 0.65;
 	}
 	if (cubeCountNode) {
-		cubeCountNode.innerText = `${t('blocksSmashed')}${state.game.cubeCount}`;
+		cubeCountNode.innerText = `${t('cubeCountPrefix')}${state.game.cubeCount}`;
 	}
 }
-
-renderScoreHud();
-
-handlePointerDown($('.pause-btn'), () => pauseGame());
-
-const slowmoNode = $('.slowmo');
-const slowmoBarNode = $('.slowmo__bar');
 
 function renderSlowmoStatus(percentRemaining) {
 	if (!slowmoNode || !slowmoBarNode) return;
@@ -906,14 +901,12 @@ function renderSlowmoStatus(percentRemaining) {
 	slowmoBarNode.style.transform = `scaleX(${percentRemaining.toFixed(3)})`;
 }
 
+handlePointerDown($('.pause-btn'), () => pauseGame());
 
-// menus.js
-// ============================================================================
 const menuContainerNode = $('.menus');
 const menuMainNode = $('.menu--main');
 const menuPauseNode = $('.menu--pause');
 const menuScoreNode = $('.menu--score');
-
 const finalScoreLblNode = $('.final-score-lbl');
 const highScoreLblNode = $('.high-score-lbl');
 
@@ -938,12 +931,14 @@ function renderMenus() {
 			showMenu(menuPauseNode);
 			break;
 		case MENU_SCORE:
-			if (finalScoreLblNode) finalScoreLblNode.textContent = formatNumber(state.game.score);
+			if (finalScoreLblNode) {
+				finalScoreLblNode.textContent = formatNumber(state.game.score);
+			}
 			if (highScoreLblNode) {
 				if (isNewHighScore()) {
 					highScoreLblNode.textContent = t('newHighScore');
 				} else {
-					highScoreLblNode.textContent = `${t('highScore')}${formatNumber(getHighScore())}`;
+					highScoreLblNode.textContent = `${t('highScorePrefix')}${formatNumber(getHighScore())}`;
 				}
 			}
 			showMenu(menuScoreNode);
@@ -957,46 +952,7 @@ function renderMenus() {
 	}
 }
 
-renderMenus();
-
-
-// 多语言 DOM 静态文本初始化
-function applyLanguage() {
-	document.documentElement.lang = currentLang;
-
-	const setText = (selector, val) => {
-		const el = $(selector);
-		if (el) el.textContent = val;
-	};
-
-	setText('.play-normal-btn', t('playNormal'));
-	setText('.play-casual-btn', t('playCasual'));
-	setText('.resume-btn', t('resume'));
-	setText('.play-again-btn', t('playAgain'));
-
-	document.querySelectorAll('.menu-btn--pause, .menu-btn--score').forEach(el => {
-		el.textContent = t('mainMenu');
-	});
-
-	const pauseTitle = $('.menu--pause h1, .menu--pause h2');
-	if (pauseTitle) pauseTitle.textContent = t('paused');
-
-	const scoreTitle = $('.menu--score h1, .menu--score h2');
-	if (scoreTitle) scoreTitle.textContent = t('gameOver');
-
-	if (slowmoNode) {
-		slowmoNode.setAttribute('data-text', t('slowmo'));
-	}
-
-	renderScoreHud();
-}
-
-applyLanguage();
-
-
-////////////////////
-// Button Actions //
-////////////////////
+// 统一绑定菜单按钮（仅执行一次，避免重复监听）
 handleClick($('.play-normal-btn'), () => {
 	setGameMode(GAME_MODE_RANKED);
 	setActiveMenu(null);
@@ -1020,8 +976,10 @@ handleClick($('.play-again-btn'), () => {
 handleClick($('.menu-btn--score'), () => setActiveMenu(MENU_MAIN));
 
 
-// actions.js
 // ============================================================================
+// 8. 游戏流程动作 (actions.js)
+// ============================================================================
+
 function setActiveMenu(menu) {
 	state.menus.active = menu;
 	renderMenus();
@@ -1066,11 +1024,11 @@ function resetGame() {
 }
 
 function pauseGame() {
-	isInGame() && setActiveMenu(MENU_PAUSE);
+	if (isInGame()) setActiveMenu(MENU_PAUSE);
 }
 
 function resumeGame() {
-	isPaused() && setActiveMenu(null);
+	if (isPaused()) setActiveMenu(null);
 }
 
 function endGame() {
@@ -1082,14 +1040,16 @@ function endGame() {
 }
 
 window.addEventListener('keydown', event => {
-	if (event.key === 'p') {
+	if (event.key === 'p' || event.key === 'P' || event.key === 'Escape') {
 		isPaused() ? resumeGame() : pauseGame();
 	}
 });
 
 
-// tick.js
 // ============================================================================
+// 9. 物理与帧更新循环 (tick.js & draw.js)
+// ============================================================================
+
 let spawnTime = 0;
 const maxSpawnX = 450;
 const pointerDelta = { x: 0, y: 0 };
@@ -1102,9 +1062,6 @@ const spawnExtraDelay = 300;
 let targetSpeed = 1;
 
 function tick(width, height, simTime, simSpeed, lag) {
-	PERF_START('frame');
-	PERF_START('tick');
-
 	state.game.time += simTime;
 
 	if (slowmoRemaining > 0) {
@@ -1123,7 +1080,6 @@ function tick(width, height, simTime, simSpeed, lag) {
 
 	const centerX = width / 2;
 	const centerY = height / 2;
-
 	const simAirDrag = 1 - (airDrag * simSpeed);
 	const simAirDragSpark = 1 - (airDragSpark * simSpeed);
 
@@ -1157,8 +1113,6 @@ function tick(width, height, simTime, simSpeed, lag) {
 		touchPoints.shift();
 	}
 
-	PERF_START('entities');
-
 	spawnTime -= simTime;
 	if (spawnTime <= 0) {
 		if (spawnExtra > 0) {
@@ -1171,7 +1125,7 @@ function tick(width, height, simTime, simSpeed, lag) {
 		const spawnRadius = Math.min(centerX * 0.8, maxSpawnX);
 		target.x = (Math.random() * spawnRadius * 2 - spawnRadius);
 		target.y = centerY + targetHitRadius * 2;
-		target.z = (Math.random() * targetRadius*2 - targetRadius);
+		target.z = (Math.random() * targetRadius * 2 - targetRadius);
 		target.xD = Math.random() * (target.x * -2 / 120);
 		target.yD = -20;
 		targets.push(target);
@@ -1227,7 +1181,7 @@ function tick(width, height, simTime, simSpeed, lag) {
 		}
 
 		const hitTestCount = Math.ceil(pointerSpeed / targetRadius * 2);
-		for (let ii=1; ii<=hitTestCount; ii++) {
+		for (let ii = 1; ii <= hitTestCount; ii++) {
 			const percent = 1 - (ii / hitTestCount);
 			const hitX = pointerScene.x - pointerDelta.x * percent;
 			const hitY = pointerScene.y - pointerDelta.y * percent;
@@ -1239,7 +1193,6 @@ function tick(width, height, simTime, simSpeed, lag) {
 			if (distance <= targetHitRadius) {
 				if (!target.hit) {
 					target.hit = true;
-
 					target.xD += pointerDeltaScaled.x * hitDampening;
 					target.yD += pointerDeltaScaled.y * hitDampening;
 					target.rotateXD += pointerDeltaScaled.y * 0.001;
@@ -1337,9 +1290,6 @@ function tick(width, height, simTime, simSpeed, lag) {
 		spark.yD += gravity * simSpeed;
 	}
 
-	PERF_END('entities');
-
-	PERF_START('3D');
 	allVertices.length = 0;
 	allPolys.length = 0;
 	allShadowVertices.length = 0;
@@ -1366,36 +1316,25 @@ function tick(width, height, simTime, simSpeed, lag) {
 	allVertices.forEach(projectVertex);
 	allPolys.forEach(p => computePolyNormal(p, 'normalCamera'));
 
-	PERF_END('3D');
-
-	PERF_START('shadows');
-	transformVertices(allShadowVertices, allShadowVertices, 0, 0, 0, TAU/8, 0, 0, 1, 1, 1);
+	transformVertices(allShadowVertices, allShadowVertices, 0, 0, 0, TAU / 8, 0, 0, 1, 1, 1);
 	allShadowPolys.forEach(p => computePolyNormal(p, 'normalWorld'));
 
 	const shadowDistanceMult = Math.hypot(1, 1);
 	const shadowVerticesLength = allShadowVertices.length;
-	for (let i=0; i<shadowVerticesLength; i++) {
+	for (let i = 0; i < shadowVerticesLength; i++) {
 		const distance = allVertices[i].z - backboardZ;
 		allShadowVertices[i].z -= shadowDistanceMult * distance;
 	}
-	transformVertices(allShadowVertices, allShadowVertices, 0, 0, 0, -TAU/8, 0, 0, 1, 1, 1);
+	transformVertices(allShadowVertices, allShadowVertices, 0, 0, 0, -TAU / 8, 0, 0, 1, 1, 1);
 	allShadowVertices.forEach(projectVertex);
-
-	PERF_END('shadows');
-	PERF_END('tick');
 }
 
-
-// draw.js
-// ============================================================================
-function draw(ctx, width, height, viewScale) {
-	PERF_START('draw');
+function draw(ctx, width, height) {
 	const halfW = width / 2;
 	const halfH = height / 2;
-
 	ctx.lineJoin = 'bevel';
 
-	PERF_START('drawShadows');
+	// 阴影渲染
 	ctx.fillStyle = shadowColor;
 	ctx.strokeStyle = shadowColor;
 	allShadowPolys.forEach(p => {
@@ -1403,24 +1342,21 @@ function draw(ctx, width, height, viewScale) {
 			ctx.lineWidth = 2;
 			ctx.beginPath();
 			const { vertices } = p;
-			const vCount = vertices.length;
 			ctx.moveTo(vertices[0].x, vertices[0].y);
-			for (let i=1; i<vCount; i++) ctx.lineTo(vertices[i].x, vertices[i].y);
+			for (let i = 1; i < vertices.length; i++) ctx.lineTo(vertices[i].x, vertices[i].y);
 			ctx.closePath();
 			ctx.stroke();
 		} else {
 			ctx.beginPath();
 			const { vertices } = p;
-			const vCount = vertices.length;
 			ctx.moveTo(vertices[0].x, vertices[0].y);
-			for (let i=1; i<vCount; i++) ctx.lineTo(vertices[i].x, vertices[i].y);
+			for (let i = 1; i < vertices.length; i++) ctx.lineTo(vertices[i].x, vertices[i].y);
 			ctx.closePath();
 			ctx.fill();
 		}
 	});
-	PERF_END('drawShadows');
 
-	PERF_START('drawPolys');
+	// 实体多边形渲染
 	allPolys.forEach(p => {
 		if (!p.wireframe && p.normalCamera.z < 0) return;
 
@@ -1453,24 +1389,23 @@ function draw(ctx, width, height, viewScale) {
 		if (p.strokeWidth !== 0) ctx.stroke();
 		if (fadeOut) ctx.globalAlpha = 1;
 	});
-	PERF_END('drawPolys');
 
-	PERF_START('draw2D');
+	// 火花渲染
 	ctx.strokeStyle = sparkColor;
 	ctx.lineWidth = sparkThickness;
 	ctx.beginPath();
 	sparks.forEach(spark => {
 		ctx.moveTo(spark.x, spark.y);
 		const scale = (spark.life / spark.maxLife) ** 0.5 * 1.5;
-		ctx.lineTo(spark.x - spark.xD*scale, spark.y - spark.yD*scale);
+		ctx.lineTo(spark.x - spark.xD * scale, spark.y - spark.yD * scale);
 	});
 	ctx.stroke();
 
+	// 滑动拖尾渲染
 	ctx.strokeStyle = touchTrailColor;
-	const touchPointCount = touchPoints.length;
-	for (let i=1; i<touchPointCount; i++) {
+	for (let i = 1; i < touchPoints.length; i++) {
 		const current = touchPoints[i];
-		const prev = touchPoints[i-1];
+		const prev = touchPoints[i - 1];
 		if (current.touchBreak || prev.touchBreak) continue;
 		const scale = current.life / touchPointLife;
 		ctx.lineWidth = scale * touchTrailThickness;
@@ -1479,16 +1414,13 @@ function draw(ctx, width, height, viewScale) {
 		ctx.lineTo(current.x, current.y);
 		ctx.stroke();
 	}
-	PERF_END('draw2D');
-
-	PERF_END('draw');
-	PERF_END('frame');
-	PERF_UPDATE();
 }
 
 
-// canvas.js
 // ============================================================================
+// 10. 画布与事件主循环 (canvas.js & interaction.js)
+// ============================================================================
+
 function setupCanvases() {
 	const ctx = canvas.getContext('2d');
 	const dpr = window.devicePixelRatio || 1;
@@ -1536,16 +1468,13 @@ function setupCanvases() {
 		const drawScale = dpr * viewScale;
 		ctx.scale(drawScale, drawScale);
 		ctx.translate(halfW, halfH);
-		draw(ctx, width, height, viewScale);
+		draw(ctx, width, height);
 		ctx.setTransform(1, 0, 0, 1, 0, 0);
 	}
 	const raf = () => requestAnimationFrame(frameHandler);
 	raf();
 }
 
-
-// interaction.js
-// ============================================================================
 function handleCanvasPointerDown(x, y) {
 	if (!pointerIsDown) {
 		pointerIsDown = true;
@@ -1592,7 +1521,8 @@ if ('PointerEvent' in window) {
 			activeTouchId = touch.identifier;
 			handleCanvasPointerDown(touch.clientX, touch.clientY);
 		}
-	});
+	}, { passive: true });
+
 	canvas.addEventListener('touchend', event => {
 		for (let touch of event.changedTouches) {
 			if (touch.identifier === activeTouchId) {
@@ -1601,6 +1531,7 @@ if ('PointerEvent' in window) {
 			}
 		}
 	});
+
 	canvas.addEventListener('touchmove', event => {
 		for (let touch of event.changedTouches) {
 			if (touch.identifier === activeTouchId) {
@@ -1612,6 +1543,8 @@ if ('PointerEvent' in window) {
 	}, { passive: false });
 }
 
-// index.js
-// ============================================================================
+// 启动执行
+applyLanguageToDOM();
+renderScoreHud();
+renderMenus();
 setupCanvases();
