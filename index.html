@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 	<head>
 		<meta charset="utf-8">
-		<title data-i18n="title">Menja</title>
+		<title data-i18n="title">切方块</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-		<meta name="keywords" content="Menja, 切方块, 3D Game, HTML5" />
+		<meta name="keywords" content="切方块, Menja, 3D Game, HTML5" />
 		<meta name="description" content="3D Cube Slicing Game." /> 
 		<link rel="stylesheet" href="css/style.css"/>
 	</head>
@@ -19,7 +19,7 @@
 				<div class="cube-count-lbl"></div>
 			</div>
 			<div class="pause-btn" aria-label="Pause"><div></div></div>
-			<div class="slowmo" data-text="SLOW-MO">
+			<div class="slowmo" data-text="慢动作">
 				<div class="slowmo__bar"></div>
 			</div>
 		</div>
@@ -28,27 +28,29 @@
 		<div class="menus">
 			<!-- 主菜单 -->
 			<div class="menu menu--main">
-				<h1 data-i18n="mainTitle">MENJA</h1>
-				<button type="button" class="play-normal-btn" data-i18n="playNormal">Play Normal</button>
-				<button type="button" class="play-casual-btn" data-i18n="playCasual">Play Casual</button>
-				<div class="credits" data-i18n="credits">An 8KB 3D Game</div>
+				<!-- 语言切换按钮 -->
+				<button type="button" class="lang-switch-btn" aria-label="Language Switch">EN / 中文</button>
+				<h1 data-i18n="mainTitle">切方块</h1>
+				<button type="button" class="play-normal-btn" data-i18n="playNormal">经典模式</button>
+				<button type="button" class="play-casual-btn" data-i18n="playCasual">休闲模式</button>
+				<div class="credits" data-i18n="credits">8 KB 三维切方块游戏</div>
 			</div>
 
 			<!-- 暂停菜单 -->
 			<div class="menu menu--pause">
-				<h1 data-i18n="pauseTitle">PAUSED</h1>
-				<button type="button" class="resume-btn" data-i18n="resume">Resume</button>
-				<button type="button" class="menu-btn--pause" data-i18n="mainMenu">Main Menu</button>
+				<h1 data-i18n="pauseTitle">游戏暂停</h1>
+				<button type="button" class="resume-btn" data-i18n="resume">继续游戏</button>
+				<button type="button" class="menu-btn--pause" data-i18n="mainMenu">返回主菜单</button>
 			</div>
 
 			<!-- 结算菜单 -->
 			<div class="menu menu--score">
-				<h1 data-i18n="gameOverTitle">GAME OVER</h1>
-				<h2 data-i18n="yourScore">YOUR SCORE:</h2>
+				<h1 data-i18n="gameOverTitle">游戏结束</h1>
+				<h2 data-i18n="yourScore">本次得分：</h2>
 				<div class="final-score-lbl">0</div>
 				<div class="high-score-lbl"></div>
-				<button type="button" class="play-again-btn" data-i18n="playAgain">Play Again</button>
-				<button type="button" class="menu-btn--score" data-i18n="mainMenu">Main Menu</button>
+				<button type="button" class="play-again-btn" data-i18n="playAgain">再玩一次</button>
+				<button type="button" class="menu-btn--score" data-i18n="mainMenu">返回主菜单</button>
 			</div>
 		</div>
 
