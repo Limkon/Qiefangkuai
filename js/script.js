@@ -1,5 +1,5 @@
 // ============================================================================
-// 1. i18n 多语言系统（严格纯中文 / 纯英文隔离，支持记忆切换）
+// 1. i18n 多语言系统（严格纯中文 / 纯英文隔离）
 // ============================================================================
 
 const I18N = {
@@ -19,8 +19,7 @@ const I18N = {
 		highScorePrefix: 'HIGH SCORE: ',
 		scorePrefix: 'SCORE: ',
 		cubeCountPrefix: 'BLOCKS SMASHED: ',
-		slowmoText: 'SLOW-MO',
-		langBtn: '中文'
+		slowmoText: 'SLOW-MO'
 	},
 	zh: {
 		title: '切方块',
@@ -38,30 +37,13 @@ const I18N = {
 		highScorePrefix: '最高分：',
 		scorePrefix: '当前分数：',
 		cubeCountPrefix: '粉碎方块：',
-		slowmoText: '慢动作',
-		langBtn: 'English'
+		slowmoText: '慢动作'
 	}
 };
 
-const LANG_STORAGE_KEY = '__menja_game_lang';
-
 function detectLanguage() {
 	try {
-		// 1. URL 参数优先 ?lang=zh / ?lang=en
-		const params = new URLSearchParams(window.location.search);
-		const urlLang = params.get('lang');
-		if (urlLang && (urlLang === 'zh' || urlLang === 'en')) {
-			localStorage.setItem(LANG_STORAGE_KEY, urlLang);
-			return urlLang;
-		}
-
-		// 2. 本地缓存次之
-		const cached = localStorage.getItem(LANG_STORAGE_KEY);
-		if (cached === 'zh' || cached === 'en') {
-			return cached;
-		}
-
-		// 3. 浏览器语言匹配（遍历所有首选语言）
+		// 优先检索所有首选语言
 		const navLangs = navigator.languages || [navigator.language || navigator.userLanguage || ''];
 		for (const l of navLangs) {
 			if (typeof l === 'string' && l.toLowerCase().startsWith('zh')) {
@@ -69,10 +51,10 @@ function detectLanguage() {
 			}
 		}
 	} catch (e) {}
-	return 'zh'; // 默认采用纯中文
+	return 'zh'; // 默认优先采用纯中文
 }
 
-let currentLang = detectLanguage();
+const currentLang = detectLanguage();
 const t = key => (I18N[currentLang] && I18N[currentLang][key]) || I18N.zh[key] || '';
 
 // 统一应用静态 DOM 多语言
@@ -92,21 +74,6 @@ function applyLanguageToDOM() {
 	if (slowmoEl) {
 		slowmoEl.setAttribute('data-text', t('slowmoText'));
 	}
-
-	const langBtn = document.querySelector('.lang-switch-btn');
-	if (langBtn) {
-		langBtn.textContent = t('langBtn');
-	}
-}
-
-function toggleLanguage() {
-	currentLang = currentLang === 'zh' ? 'en' : 'zh';
-	try {
-		localStorage.setItem(LANG_STORAGE_KEY, currentLang);
-	} catch (e) {}
-	applyLanguageToDOM();
-	renderScoreHud();
-	renderMenus();
 }
 
 
@@ -1010,11 +977,6 @@ handleClick($('.play-again-btn'), () => {
 });
 
 handleClick($('.menu-btn--score'), () => setActiveMenu(MENU_MAIN));
-
-// 语言切换事件
-handleClick($('.lang-switch-btn'), () => {
-	toggleLanguage();
-});
 
 
 // ============================================================================
