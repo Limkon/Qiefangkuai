@@ -2,24 +2,11 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<!-- 默认英文标题，检测到中文时由 JS 自动改为“切方块” -->
-		<title>Menja</title>
+		<title data-i18n="title">Menja</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-		<meta name="keywords" content="Menja, 切方块, 网页游戏" />
-		<meta name="description" content="Menja 3D切方块游戏。" /> 
-		<meta name="author" content="X(http://haiyong.site)" />
-		<meta name="copyright" content="X(http://haiyong.site)" />
-		<link rel="icon" href="http://haiyong.site/wp-content/uploads/2021/07/cropped-59255587-1-192x192.jpg" sizes="192x192" />
+		<meta name="keywords" content="Menja, 切方块, 3D Game, HTML5" />
+		<meta name="description" content="3D Cube Slicing Game." /> 
 		<link rel="stylesheet" href="css/style.css"/>
-		<script>
-            var _hmt = _hmt || [];
-            (function() {
-            var hm = document.createElement("script");
-            hm.src = "https://hm.baidu.com/hm.js?a9430a37066911650e26adadcc42798a";
-            var s = document.getElementsByTagName("script")[0]; 
-            s.parentNode.insertBefore(hm, s);
-            })();
-        </script>
 	</head>
 	<body>
 		<!-- Game canvas -->
@@ -31,8 +18,8 @@
 				<div class="score-lbl"></div>
 				<div class="cube-count-lbl"></div>
 			</div>
-			<div class="pause-btn"><div></div></div>
-			<div class="slowmo">
+			<div class="pause-btn" aria-label="Pause"><div></div></div>
+			<div class="slowmo" data-text="SLOW-MO">
 				<div class="slowmo__bar"></div>
 			</div>
 		</div>
@@ -41,31 +28,30 @@
 		<div class="menus">
 			<!-- 主菜单 -->
 			<div class="menu menu--main">
-				<h1 class="main-title">MENJA</h1>
-				<button type="button" class="play-normal-btn">Play Normal</button>
-				<button type="button" class="play-casual-btn">Play Casual</button>
-				<div class="credits">An 8KB Game by <a href="http://haiyong.site/index" target="_blank">X</a><br><br>
-					<a href="http://haiyong.site/moyu" target="_blank">More Games</a>
-				</div>
+				<h1 data-i18n="mainTitle">MENJA</h1>
+				<button type="button" class="play-normal-btn" data-i18n="playNormal">Play Normal</button>
+				<button type="button" class="play-casual-btn" data-i18n="playCasual">Play Casual</button>
+				<div class="credits" data-i18n="credits">An 8KB 3D Game</div>
 			</div>
 
 			<!-- 暂停菜单 -->
 			<div class="menu menu--pause">
-				<h1 class="pause-title">PAUSED</h1>
-				<button type="button" class="resume-btn">Resume</button>
-				<button type="button" class="menu-btn--pause">Main Menu</button>
+				<h1 data-i18n="pauseTitle">PAUSED</h1>
+				<button type="button" class="resume-btn" data-i18n="resume">Resume</button>
+				<button type="button" class="menu-btn--pause" data-i18n="mainMenu">Main Menu</button>
 			</div>
 
 			<!-- 结算菜单 -->
 			<div class="menu menu--score">
-				<h1 class="gameover-title">GAME OVER</h1>
-				<h2 class="your-score-lbl">YOUR SCORE:</h2>
+				<h1 data-i18n="gameOverTitle">GAME OVER</h1>
+				<h2 data-i18n="yourScore">YOUR SCORE:</h2>
 				<div class="final-score-lbl">0</div>
 				<div class="high-score-lbl"></div>
-				<button type="button" class="play-again-btn">Play Again</button>
-				<button type="button" class="menu-btn--score">Main Menu</button>
+				<button type="button" class="play-again-btn" data-i18n="playAgain">Play Again</button>
+				<button type="button" class="menu-btn--score" data-i18n="mainMenu">Main Menu</button>
 			</div>
 		</div>
+
+		<script src="js/script.js"></script>
 	</body>
-	<script src="js/script.js"></script>
 </html>
